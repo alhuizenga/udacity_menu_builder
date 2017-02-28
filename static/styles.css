@@ -1,0 +1,97 @@
+/** {
+  border: 1px solid red;
+}*/
+
+
+header, nav, footer, div {
+  box-sizing: border-box;
+}
+
+body {
+  width: 100%;
+  padding-right: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-family: "Lato", sans-serif;
+  font-size: 16px;
+  color: #4a4b4c;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.messages {
+  background-color: lightyellow;
+}
+
+.new_item {
+  padding-bottom: 10px;
+}
+
+.item_actions {
+  padding-bottom: 10px;
+}
+
+
+hr {
+  margin-top: 0px;
+  margin-bottom: 10px;
+  border-color: #80858e;
+}
+
+/*.nav {
+ padding-bottom: 10px;
+}
+.subject {
+  margin-bottom: -10px;
+  font-size: 18pt;
+  font-weight: bold;
+  word-wrap: break-word;
+}
+
+.credits {
+  margin-top: 7px;
+}
+
+.post_content {
+  margin-top: -50px;
+  white-space: pre-wrap;
+  margin-bottom: -40px;
+}
+
+.post_footer {
+  padding-bottom: 20px;
+}
+.footer {
+  padding-top: 20px;
+}
+
+.comments_title {
+  padding-bottom: 10px;
+}
+
+.comments {
+  margin-left: 20px;
+}
+
+.comment {
+  margin-top: -40px;
+  white-space: pre-wrap;
+  margin-bottom: -50px;
+}
+
+.comment_footer {
+  padding-bottom: 20px;
+}
+
+.btn-link {
+  font-size: 12pt;
+}
+
+.delete_button {
+  margin-top: -7px;
+  margin-left: -40px;
+}*/
