@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Menu Builder</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+    </head>
+    <body class="container">
+        <header>
+            <div class="title">
+                <h1>Restaurants</h1>
+            </div>
+            <div class="session">
+                {% if not user %}
+                <p><a href="/login">Sign In</a></p>
+                {% endif %}                
+                {% if user %}
+                <p>{{user.name}}</p>
+                <p><a href="{{url_for('gdisconnect')}}">Sign Out</a></p>
+                {% endif %}
+            </div>
+            <div class="messages">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <ul>
+                        {% for message in messages %}
+                        <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </header>
+        <content>
+            {% if user %}
+            <p class="new_item">
+                <a href="{{url_for('newRestaurant')}}">
+                    New Restaurant
+                </a>
+            </p>
+            {% endif %}
+            {% for r in restaurants %}
+            <div class="item">
+                <h3>
+                    <a href="{{url_for('restaurantMenu', restaurant_id=r.id)}}">
+                        {{r.name}}
+                    </a>
+                </h3>
+            </div>
+            {% if user %}
+            {% if user.id == r.user_id %}
+            <div class="item_actions">
+                <div class="item_action">
+                    <a href="{{url_for('editRestaurant',
+                            restaurant_id=r.id)}}">
+                        Edit
+                    </a>
+                </div>
+                <div class="item_action">
+                    <a href="{{url_for('deleteRestaurant',
+                            restaurant_id=r.id)}}">
+                        Delete
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </content>
+    </body>
+</html>

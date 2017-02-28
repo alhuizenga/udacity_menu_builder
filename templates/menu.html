@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Menu Builder</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+    </head>
+    <body class="container">
+        <header>
+            <div class="title">
+                <h1>{{restaurant.name}}</h1>
+            </div>
+            <div class="session">
+                {% if not user %}
+                <p><a href="/login">Sign In</a></p>
+                {% endif %}                
+                {% if user %}
+                <p>{{user.name}}</p>
+                <p><a href="{{url_for('gdisconnect')}}">Sign Out</a></p>
+                {% endif %}
+            </div>
+            <div class="messages">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <ul>
+                        {% for message in messages %}
+                        <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </header>
+        <content>
+            <p class="home_link">
+                <a href="{{url_for('restaurants')}}">
+                    More Restaurants
+                </a>
+            </p>
+            {% if user.id == restaurant.user_id %}
+            <p>
+                <a href="{{url_for('newMenuItem', restaurant_id=restaurant.id)}}">
+                    New Menu Item
+                </a>
+            </p>
+            {% endif %}
+            {% if appetizers %}
+            <h2 class="course_header">Appetizers</h2>
+                {% for a in appetizers %}
+                <div class="item">
+                    <h3 class="item_name">{{a.name}}</h3>
+                    <p class="item_description">{{a.description}}</p>
+                    <p class="item_price"> {{a.price}} </p>
+                </div>
+                {% if user.id == restaurant.user_id %}
+                <div class="item_actions">
+                    <div class="item_action">
+                    {{ a.id }}
+                    {{ restaurant.id }}
+                        <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=a.id)}}">
+                            Edit
+                        </a>
+                    </div>
+                    <div class="item_action">
+                        <a href="{{url_for('deleteMenuItem',
+                                item_id=a.id)}}">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+                {% endif %}           
+                {% endfor %}
+            {% endif %}
+            {% if entrees %}
+            <h2 class="course_header">Entrees</h2>
+                {% for e in entrees %}
+                <div class="item">
+                    <h3 class="item_name">{{e.name}}</h3>
+                    <p class="item_description">{{e.description}}</p>
+                    <p class="item_price"> {{e.price}} </p>
+                </div>
+                {% if user.id == restaurant.user_id %}
+                <div class="item_actions">
+                    <div class="item_action">
+                        <a href="{{url_for('editMenuItem',
+                                restaurant_id=restaurant.id,
+                                item_id=e.id)}}">
+                            Edit
+                        </a>
+                    </div>
+                    <div class="item_action">
+                        <a href="{{url_for('deleteMenuItem',
+                                item_id=e.id)}}">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+                {% endif %} 
+                {% endfor %}    
+            {% endif %}
+            {% if desserts %}      
+            <h2 class="course_header">Desserts</h2>
+                {% for d in desserts %}
+                <div class="item">
+                    <h3 class="item_name">{{d.name}}</h3>
+                    <p class="item_description">{{d.description}}</p>
+                    <p class="item_price"> {{d.price}} </p>
+                </div>
+                {% if user.id == restaurant.user_id %}
+                <div class="item_actions">
+                    <div class="item_action">
+                        <a href="{{url_for('editMenuItem',
+                                restaurant_id=restaurant.id,
+                                item_id=d.id)}}">
+                            Edit
+                        </a>
+                    </div>
+                    <div class="item_action">
+                        <a href="{{url_for('deleteMenuItem',
+                                item_id=d.id)}}">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+                {% endif %} 
+                {% endfor %}
+            {% endif %}          
+            {% if beverages %}
+            <h2 class="course_header">Beverages</h2>
+                {% for b in beverages %}
+                <div class="item">
+                    <h3 class="item_name">{{b.name}}</h3>
+                    <p class="item_description">{{b.description}}</p>
+                    <p class="item_price"> {{b.price}} </p>
+                </div>
+                {% if user.id == restaurant.user_id %}
+                <div class="item_actions">
+                    <div class="item_action">
+                        <a href="{{url_for('editMenuItem',
+                                restaurant_id=restaurant.id,
+                                item_id=b.id)}}">
+                            Edit
+                        </a>
+                    </div>
+                    <div class="item_action">
+                        <a href="{{url_for('deleteMenuItem',
+                                item_id=b.id)}}">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% endif %} 
+        </content>
+    </body>
+</html>

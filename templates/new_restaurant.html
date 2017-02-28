@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Menu Builder</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+    </head>
+    <body class="container">
+        <header>
+            <div class="title">
+                <h1>New Restaurant</h1>
+            </div>
+            <div class="session">
+                {% if not user %}
+                <p><a href="/login">Sign In</a></p>
+                {% endif %}                
+                {% if user %}
+                <p>{{user.name}}</p>
+                <p><a href="{{url_for('gdisconnect')}}">Sign Out</a></p>
+                {% endif %}
+            </div>
+        </header>
+        <content>
+            <form action="{{url_for('newRestaurant')}}",
+            method="post">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control input-lg" name="name">
+                </div>
+                <button type="submit" class="btn btn-default">Create</button>
+            </form>
+            <p class="cancel"><a href="{{url_for('restaurants')}}">Cancel</a></p>
+        </content>
+    </body>
+</html>
