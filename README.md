@@ -18,4 +18,4 @@ A web application for building restaurant menus. Coded in python. Supports multi
 3. [Clone this repository](https://github.com/alhuizenga/udacity_blog_project.git)
 4. Run the virtual machine ("vagrant up") and log in ("vagrant ssh")
 5. Go to the root directory and run the project.py file
-6. Open the application at http:localhost:5000
+6. Open the application at http://localhost:5000
