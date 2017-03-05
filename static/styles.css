@@ -2,6 +2,14 @@
   border: 1px solid red;
 }*/
 
+/*html { 
+  background: url(images/menu_bg.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}*/
+
 
 header, nav, footer, div {
   box-sizing: border-box;
@@ -12,9 +20,19 @@ body {
   padding-right: 20px;
   margin-top: 20px;
   margin-bottom: 20px;
-  font-family: "Lato", sans-serif;
+  font-family: serif;
+  font-weight: 300;
   font-size: 16px;
-  color: #4a4b4c;
+  font-color: gray;
+  background-color: transparent;
+}
+
+a {
+  color: #4d3319;
+}
+
+a:hover {
+  color: #4d3319;
 }
 
 h1, h2, h3, h4, h5 {
@@ -24,74 +42,64 @@ h1, h2, h3, h4, h5 {
 }
 
 .messages {
-  background-color: lightyellow;
+  background-color: #f0f0f5;
 }
 
 .new_item {
   padding-bottom: 10px;
 }
 
-.item_actions {
+.restaurant {
+  width: 100%;
+}
+
+.creator {
+  max-width: 100px;
+}
+
+.session {
+  max-width: 200px;
+  font-size: 10pt;
+  margin-top: 20px;
+  border-top: thick double lightblue;
+}
+
+.session p {
+  padding-top: 5px;
+}
+
+.new_item {
+  max-width: 200px;
+  margin-bottom: 20px;
+  border-bottom: thick double lightblue;
+}
+
+.creator {
+  max-width: 200px;
+  margin-bottom: 20px;
+  margin-top: 20px;
   padding-bottom: 10px;
+  padding-top: 10px;
+  border-bottom: thick double lightblue;
+  border-top: thick double lightblue;
 }
 
-
-hr {
-  margin-top: 0px;
-  margin-bottom: 10px;
-  border-color: #80858e;
+.course_header {
+  margin-top: 20px;
 }
 
-/*.nav {
- padding-bottom: 10px;
-}
-.subject {
-  margin-bottom: -10px;
-  font-size: 18pt;
-  font-weight: bold;
-  word-wrap: break-word;
+.item_actions td {
+  padding: 2px;
 }
 
-.credits {
-  margin-top: 7px;
+.restaurant {
+  margin-top: 15px;
 }
 
-.post_content {
-  margin-top: -50px;
-  white-space: pre-wrap;
-  margin-bottom: -40px;
+.home_link {
+  margin-top: 20px;
 }
 
-.post_footer {
-  padding-bottom: 20px;
+.item_name {
+  margin-top: 15px;
 }
-.footer {
-  padding-top: 20px;
-}
-
-.comments_title {
-  padding-bottom: 10px;
-}
-
-.comments {
-  margin-left: 20px;
-}
-
-.comment {
-  margin-top: -40px;
-  white-space: pre-wrap;
-  margin-bottom: -50px;
-}
-
-.comment_footer {
-  padding-bottom: 20px;
-}
-
-.btn-link {
-  font-size: 12pt;
-}
-
-.delete_button {
-  margin-top: -7px;
-  margin-left: -40px;
-}*/
