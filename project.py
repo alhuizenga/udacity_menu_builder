@@ -36,7 +36,81 @@ def showLogin():
     return render_template('login.html', STATE=state)
 
 
-# Get the one-time-secret code from the login page and authenticate
+# Get the one-time-secret code from the login page and authenticate with Facebook
+@app.route('/fbconnect', methods=['POST'])
+def fbconnect():
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = request.data
+    print "access token received %s " % access_token
+    app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
+        'web']['app_id']
+    app_secret = json.loads(
+        open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+        app_id, app_secret, access_token)
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+
+    # Use token to get user info from API
+    userinfo_url = "https://graph.facebook.com/v2.4/me"
+
+    # strip expire tag from access token
+    token = result.split("&")[0]
+    url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+
+    # print "url sent for API access:%s"% url
+    # print "API JSON result: %s" % result
+    data = json.loads(result)
+    login_session['provider'] = 'facebook'
+    login_session['username'] = data["name"]
+    login_session['email'] = data["email"]
+    login_session['facebook_id'] = data["id"]
+
+    # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
+    stored_token = token.split("=")[1]
+    login_session['access_token'] = stored_token
+
+    # Get user picture
+    url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect=0&height=200&width=200' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+    login_session['picture'] = data["data"]["url"]
+
+    # see if user exists
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    flash("Now logged in as %s" % login_session['username'])
+    return output
+
+
+# Drop the Facebook oauth session
+@app.route('/fbdisconnect')
+def fbdisconnect():
+    facebook_id = login_session['facebook_id']
+    # The access token must me included to successfully logout
+    access_token = login_session['access_token']
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    h = httplib2.Http()
+    result = h.request(url, 'DELETE')[1]
+    return "you have been logged out"
+
+
+# Get the one-time-secret code from the login page and authenticate with Google
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -46,7 +120,6 @@ def gconnect():
         return response
     # Obtain authorization code
     code = request.data
-
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
@@ -84,12 +157,10 @@ def gconnect():
         print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
-
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(json.dumps('Current user is already connected.'),                                 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -101,18 +172,15 @@ def gconnect():
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
-
     data = answer.json()
-
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
-
+    login_session['provider'] = 'google'
     user_id = getUserID(login_session['email'])
     if not user_id:
         user_id = createUser(login_session)
     login_session['user_id'] = user_id        
-
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -125,8 +193,63 @@ def gconnect():
     return output
 
 
+# Drop the Google oauth session
+@app.route('/gdisconnect')
+def gdisconnect():
+    if 'credentials' not in login_session:
+        print 'No access token'
+        response = make_response(json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = login_session['credentials']
+    print 'In gdisconnect access token is %s', access_token
+    print 'User name is: ' 
+    print login_session['username']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['credentials']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print 'result is '
+    print result
+    if result['status'] == '200':
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    else:
+        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+
+# Disconnect based on provider
+@app.route('/disconnect')
+def disconnect():
+    file = open("output.txt", "rw+")
+    for x in login_session:
+        file.write(x)
+    file.close()
+    if 'provider' in login_session:
+        if login_session['provider'] == 'google':
+            gdisconnect()
+            del login_session['gplus_id']
+            del login_session['credentials']
+        if login_session['provider'] == 'facebook':
+            fbdisconnect()
+            del login_session['facebook_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['user_id']
+        del login_session['provider']
+        flash("You have successfully been signed out.")
+        return redirect(url_for('restaurants'))
+    else:
+        flash("You were not logged in")
+        return redirect(url_for('restaurants'))
+
+
 # User Helper Functions
 
+# Save the session user to the database
 def createUser(login_session):
     newUser = User(name=login_session['username'], 
                     email=login_session['email'], 
@@ -137,50 +260,19 @@ def createUser(login_session):
     return user.id
 
 
+# Retrieve the session user from the database
 def getUserInfo(user_id):
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
+# Look up user by email address
 def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
     except:
         return None
-
-
-# Drop the oauth session
-@app.route('/gdisconnect')
-def gdisconnect():
-    access_token = login_session['credentials']
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: ' 
-    print login_session['username']
-    if access_token is None:
-        print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['credentials']
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
-    if result['status'] == '200':
-        del login_session['credentials'] 
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    else:
-    
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-        return response
 
 
 # Return a list of restaurants (application)
@@ -198,6 +290,8 @@ def restaurants():
 # Return a list of restaurants (endpoint)
 @app.route('/restaurants/JSON')
 def restaurantsJSON():
+    if 'user_id' not in login_session:
+        return redirect('login')
     restaurants = session.query(Restaurant).all()
     return jsonify(Restaurants=[r.serialize for r in restaurants])
 
@@ -224,14 +318,13 @@ def editRestaurant(restaurant_id):
     if 'user_id' not in login_session:
         return redirect('login')
     user = session.query(User).filter_by(id=login_session['user_id']).one()
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     if request.method == 'POST':
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
         restaurant.name = request.form['name']
         session.commit()
         flash("{} has been updated!".format(restaurant.name))
         return redirect(url_for('restaurants'))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
         return render_template('edit_restaurant.html', restaurant=restaurant, user=user)
 
 
@@ -241,14 +334,13 @@ def deleteRestaurant(restaurant_id):
     if 'user_id' not in login_session:
         return redirect('login')
     user = session.query(User).filter_by(id=login_session['user_id']).one()
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     if request.method == 'POST':
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
         session.delete(restaurant)
         session.commit()
         flash("{} has been deleted!".format(restaurant.name))
         return redirect(url_for('restaurants'))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
         return render_template('delete_restaurant.html', restaurant=restaurant, user=user)
 
 
@@ -260,6 +352,7 @@ def restaurantMenu(restaurant_id):
     entrees = session.query(MenuItem).filter_by(restaurant_id=restaurant_id, course='Entree').all()
     desserts = session.query(MenuItem).filter_by(restaurant_id=restaurant_id, course='Dessert').all()
     beverages = session.query(MenuItem).filter_by(restaurant_id=restaurant_id, course='Beverage').all()
+    creator = getUserInfo(restaurant.user_id)
     if 'user_id' in login_session:
         user = session.query(User).filter_by(id=login_session['user_id']).one()
         return render_template('menu.html', 
@@ -268,19 +361,23 @@ def restaurantMenu(restaurant_id):
                                 appetizers=appetizers,
                                 entrees=entrees,
                                 desserts=desserts,
-                                beverages=beverages)
+                                beverages=beverages,
+                                creator=creator)
     else:
         return render_template('menu.html',
                                 restaurant=restaurant,
                                 appetizers=appetizers,
                                 entrees=entrees,
                                 desserts=desserts,
-                                beverages=beverages)
+                                beverages=beverages,
+                                creator=creator)
 
 
 # Return the menu for a restaurant (endpoint)
 @app.route('/restaurants/<int:restaurant_id>/JSON')
 def restaurantMenuJSON(restaurant_id):
+    if 'user_id' not in login_session:
+        return redirect('login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant_id)
     return jsonify(MenuItems=[i.serialize for i in items])
@@ -318,8 +415,8 @@ def editMenuItem(restaurant_id, item_id):
     if login_session['user_id'] != restaurant.user_id:
         return redirect('login')
     user = session.query(User).filter_by(id=login_session['user_id']).one()
+    item = session.query(MenuItem).filter_by(id=item_id).one()
     if request.method == 'POST':
-        item = session.query(MenuItem).filter_by(id=item_id).one()
         item.name = request.form['name']
         item.description = request.form['description']
         item.course = request.form['course']
@@ -328,7 +425,6 @@ def editMenuItem(restaurant_id, item_id):
         flash("{} has been updated!".format(item.name))
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant.id))
     else:
-        item = session.query(MenuItem).filter_by(id=item_id).one()
         return render_template('edit_item.html', 
                                 item=item,
                                 restaurant=restaurant, 
@@ -336,30 +432,32 @@ def editMenuItem(restaurant_id, item_id):
 
 
 # Delete a menu item for a restaurant
-@app.route('/restaurants/items/<int:item_id>/delete/',
+@app.route('/restaurants/<int:restaurant_id>/items/<int:item_id>/delete/',
             methods=['GET', 'POST'])
-def deleteMenuItem(item_id):
-    if 'username' not in login_session:
+def deleteMenuItem(restaurant_id, item_id):
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    if login_session['user_id'] != restaurant.user_id:
         return redirect('login')
-    username = login_session['username']
-    user_id = login_session['user_id']    
+    user = session.query(User).filter_by(id=login_session['user_id']).one()
+    item = session.query(MenuItem).filter_by(id=item_id).one()
+
     if request.method == 'POST':
-        item = session.query(MenuItem).filter_by(id=item_id).one()
         session.delete(item)
         session.commit()
         flash("{} has been deleted!".format(item.name))
         return redirect(url_for('restaurantMenu', restaurant_id=item.restaurant_id))
     else:
-        item = session.query(MenuItem).filter_by(id=item_id).one()
         return render_template('delete_item.html', 
                                 item=item, 
-                                username=username,
-                                restaurant_id=item.restaurant_id)
+                                user=user,
+                                restaurant=restaurant)
 
 
 # Get a single menu item (endpoint)
 @app.route('/restaurants/items/<int:item_id>/JSON/')
 def getMenuItem(item_id):
+    if 'user_id' not in login_session:
+        return redirect('login')
     item = session.query(MenuItem).filter_by(id=item_id).one()
     return jsonify(MenuItem=[item.serialize])
 
