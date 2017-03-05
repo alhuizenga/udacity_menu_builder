@@ -11,15 +11,6 @@
             <div class="title">
                 <h1>{{restaurant.name}}</h1>
             </div>
-            <div class="session">
-                {% if not user %}
-                <p><a href="/login">Sign In</a></p>
-                {% endif %}                
-                {% if user %}
-                <p>{{user.name}}</p>
-                <p><a href="{{url_for('gdisconnect')}}">Sign Out</a></p>
-                {% endif %}
-            </div>
             <div class="messages">
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
@@ -31,45 +22,61 @@
                     {% endif %}
                 {% endwith %}
             </div>
+            <div class="item_actions">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="{{url_for('restaurants')}}" class="btn btn-default">
+                            More Restaurants
+                            </a>
+                        </td>
+                        {% if user %}
+                        {% if user.id == restaurant.user_id %}
+                        <td>
+                            <a href="{{url_for('newMenuItem', restaurant_id=restaurant.id)}}" 
+                            class="btn btn-default">
+                            New Menu Item
+                            </a>
+                        </td>
+                        {% endif %}
+                        {% endif %}                        
+                    </tr>
+                </table>
+            </div>
         </header>
         <content>
-            <p class="home_link">
-                <a href="{{url_for('restaurants')}}">
-                    More Restaurants
-                </a>
-            </p>
-            {% if user.id == restaurant.user_id %}
-            <p>
-                <a href="{{url_for('newMenuItem', restaurant_id=restaurant.id)}}">
-                    New Menu Item
-                </a>
-            </p>
-            {% endif %}
+            <div class="creator">
+                <p>Menu by {{creator.name}}</p> 
+                <p><img src="{{creator.picture}}" class="img-responsive"></p>                
+            </div>
             {% if appetizers %}
             <h2 class="course_header">Appetizers</h2>
                 {% for a in appetizers %}
                 <div class="item">
                     <h3 class="item_name">{{a.name}}</h3>
                     <p class="item_description">{{a.description}}</p>
-                    <p class="item_price"> {{a.price}} </p>
+                    <p class="item_price">{{a.price}}</p>
                 </div>
+                {% if user %}
                 {% if user.id == restaurant.user_id %}
                 <div class="item_actions">
-                    <div class="item_action">
-                    {{ a.id }}
-                    {{ restaurant.id }}
-                        <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=a.id)}}">
-                            Edit
-                        </a>
-                    </div>
-                    <div class="item_action">
-                        <a href="{{url_for('deleteMenuItem',
-                                item_id=a.id)}}">
-                            Delete
-                        </a>
-                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=a.id)}}" class="btn btn-default">
+                                Edit
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{url_for('deleteMenuItem', restaurant_id=restaurant.id, item_id=a.id)}}" class="btn btn-default">
+                                Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                {% endif %}           
+                {% endif %}
+                {% endif %}    
                 {% endfor %}
             {% endif %}
             {% if entrees %}
@@ -78,24 +85,27 @@
                 <div class="item">
                     <h3 class="item_name">{{e.name}}</h3>
                     <p class="item_description">{{e.description}}</p>
-                    <p class="item_price"> {{e.price}} </p>
+                    <p class="item_price">{{e.price}}</p>
                 </div>
+                {% if user %}
                 {% if user.id == restaurant.user_id %}
                 <div class="item_actions">
-                    <div class="item_action">
-                        <a href="{{url_for('editMenuItem',
-                                restaurant_id=restaurant.id,
-                                item_id=e.id)}}">
-                            Edit
-                        </a>
-                    </div>
-                    <div class="item_action">
-                        <a href="{{url_for('deleteMenuItem',
-                                item_id=e.id)}}">
-                            Delete
-                        </a>
-                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=e.id)}}" class="btn btn-default">
+                                Edit
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{url_for('deleteMenuItem', restaurant_id=restaurant.id, item_id=e.id)}}" class="btn btn-default">
+                                Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+                {% endif %} 
                 {% endif %} 
                 {% endfor %}    
             {% endif %}
@@ -105,24 +115,27 @@
                 <div class="item">
                     <h3 class="item_name">{{d.name}}</h3>
                     <p class="item_description">{{d.description}}</p>
-                    <p class="item_price"> {{d.price}} </p>
+                    <p class="item_price">{{d.price}}</p>
                 </div>
+                {% if user %}
                 {% if user.id == restaurant.user_id %}
                 <div class="item_actions">
-                    <div class="item_action">
-                        <a href="{{url_for('editMenuItem',
-                                restaurant_id=restaurant.id,
-                                item_id=d.id)}}">
-                            Edit
-                        </a>
-                    </div>
-                    <div class="item_action">
-                        <a href="{{url_for('deleteMenuItem',
-                                item_id=d.id)}}">
-                            Delete
-                        </a>
-                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=d.id)}}" class="btn btn-default">
+                                Edit
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{url_for('deleteMenuItem', restaurant_id=restaurant.id, item_id=d.id)}}" class="btn btn-default">
+                                Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+                {% endif %} 
                 {% endif %} 
                 {% endfor %}
             {% endif %}          
@@ -132,27 +145,40 @@
                 <div class="item">
                     <h3 class="item_name">{{b.name}}</h3>
                     <p class="item_description">{{b.description}}</p>
-                    <p class="item_price"> {{b.price}} </p>
+                    <p class="item_price">{{b.price}}</p>
                 </div>
+                {% if user %}
                 {% if user.id == restaurant.user_id %}
                 <div class="item_actions">
-                    <div class="item_action">
-                        <a href="{{url_for('editMenuItem',
-                                restaurant_id=restaurant.id,
-                                item_id=b.id)}}">
-                            Edit
-                        </a>
-                    </div>
-                    <div class="item_action">
-                        <a href="{{url_for('deleteMenuItem',
-                                item_id=b.id)}}">
-                            Delete
-                        </a>
-                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <a href="{{url_for('editMenuItem', restaurant_id=restaurant.id, item_id=b.id)}}" class="btn btn-default">
+                                Edit
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{url_for('deleteMenuItem', restaurant_id=restaurant.id, item_id=b.id)}}" class="btn btn-default">
+                                Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+                {% endif %}
                 {% endif %}
                 {% endfor %}
             {% endif %} 
+            <div class="session">
+                {% if not user %}
+                <p><a href="/login" class="btn btn-default">Sign In</a></p>
+                {% endif %}                
+                {% if user %}
+                <p>Signed in as {{user.name}}</p>
+                <p><img src={{user.picture}} class="img-responsive"></p>
+                <p><a href="{{url_for('disconnect')}}" class="btn btn-default">Sign Out</a></p>
+                {% endif %}
+            </div>
         </content>
     </body>
 </html>
