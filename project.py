@@ -325,9 +325,9 @@ def editRestaurant(restaurant_id):
     user = session.query(User).filter_by(id=login_session['user_id']).one()
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).first()
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if login_session['user_id'] != restaurant.user_id:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if request.method == 'POST':
         restaurant.name = request.form['name']
         session.commit()
@@ -344,9 +344,9 @@ def deleteRestaurant(restaurant_id):
     user = session.query(User).filter_by(id=login_session['user_id']).one()
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).first()
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if login_session['user_id'] != restaurant.user_id:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if request.method == 'POST':
         session.delete(restaurant)
         session.commit()
@@ -361,7 +361,7 @@ def deleteRestaurant(restaurant_id):
 def restaurantMenu(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).first()
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     appetizers = session.query(MenuItem).filter_by(restaurant_id=restaurant_id,
                                                    course='Appetizer').all()
     entrees = session.query(MenuItem).filter_by(restaurant_id=restaurant_id,
@@ -408,9 +408,9 @@ def restaurantMenuJSON(restaurant_id):
 def newMenuItem(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).first()
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if login_session['user_id'] != restaurant.user_id:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     user = session.query(User).filter_by(id=login_session['user_id']).one()
     if request.method == 'POST':
         new_item = MenuItem(name=request.form['name'],
@@ -437,11 +437,11 @@ def editMenuItem(restaurant_id, item_id):
     user = session.query(User).filter_by(id=login_session['user_id']).one()
     item = session.query(MenuItem).filter_by(id=item_id).first()
     if login_session['user_id'] != restaurant.user_id:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if not item:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if request.method == 'POST':
         item.name = request.form['name']
         item.description = request.form['description']
@@ -466,11 +466,11 @@ def deleteMenuItem(restaurant_id, item_id):
     user = session.query(User).filter_by(id=login_session['user_id']).one()
     item = session.query(MenuItem).filter_by(id=item_id).first()
     if login_session['user_id'] != restaurant.user_id:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if not restaurant:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if not item:
-        return redirect(url_for('show_login'))
+        return redirect(url_for('restaurants'))
     if request.method == 'POST':
         session.delete(item)
         session.commit()
